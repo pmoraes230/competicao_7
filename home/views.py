@@ -21,6 +21,18 @@ def get_user_profile(request):
             return {"user_name": "", "is_authenticated": False}
     return {"user_name": "", "is_authenticated": False}
 
+def login(request):
+    if request.method == "GET":
+        return render(request, "login/login.html")
+    
+    if request.method == "POST":
+        login = request.POST.get("login")
+        password = request.POST.get("password")
+    
+        if not all([login, password]):
+            messages.error(request, "Insira seu login e seu senha antes de enviar.")
+            return redirect("login")
+
 def home(request):
     context = get_user_profile(request)
     context['events'] = models.Event.objects.all()
