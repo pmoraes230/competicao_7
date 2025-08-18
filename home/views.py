@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth import logout
 from django.db.models import Q
 from django.utils import timezone
 from . import models
@@ -32,7 +34,30 @@ def login(request):
         if not all([login, password]):
             messages.error(request, "Insira seu login e seu senha antes de enviar.")
             return redirect("login")
+        
+        if models.User.objects.filter(email=login).first() or models.User.objects.filter(cpf=login).first():
+            user = models.User.objects.filter(email=login).first() or models.User.objects.filter(cpf=login).first()
+            if check_password(password, user.password):
+                request.session['user_id'] = user.id
+                request.session['user_name'] = user.name
+                request.session['user_role'] = user.profile.name
+                
+                if user.profile.name == "Totem":
+                    return redirect("validador")
+                else:
+                    return redirect("home")
+            else:
+                messages.error(request, "Senha incorreta")
+                return redirect("login")
+        else:
+            messages.error(request, "Usuário não encontrado")
+            return redirect("login")
 
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Você saiu do sistema")
+    return redirect("login")
+    
 def home(request):
     context = get_user_profile(request)
     context['events'] = models.Event.objects.all()

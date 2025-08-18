@@ -121,3 +121,15 @@ main {
 .btn_laranja:hover {
     box-shadow: 0 4px 4px 0 var(--laranja);
 }
+
+.info {
+    color: var(--laranja);
+}
+
+.error {
+    color: var(--rosa);
+}
+
+.success {
+    color: var(--verde);
+}
