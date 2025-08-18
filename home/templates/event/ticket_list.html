@@ -3,11 +3,7 @@
 
 {% block content %}
 {% block header %}
-{% if user_role == "Totem" %}
-{% include 'partials/header/header_validador.html' %}
-{% else %}
 {% include 'partials/header/header.html' %}
-{% endif %}
 {% endblock %}
 
 <main class="container">
@@ -27,25 +23,24 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn_azul color_preto" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn_laranja color_preto" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
 
-    <h1 class="text-center color_azul mt-4">Validação</h1>
-
-    <form action="{% url 'validador' %}" method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="id_ticket" class="form-label color_azul">ID do ingresso</label>
-            <input type="text" class="form-control color_azul" name="id_ticket" id="id_ticket" placeholder="Insira o código de validação do ingresso">
-        </div>
-        <div class="text-center">
-            <button type="submit" class="btn btn_verde color_preto">Validar Ingresso</button>
-        </div>
-    </form>
+    <h1 class="text-center color_azul">Ingressos Gerados</h1>
+    <ul class="list-group">
+        {% for ticket in tickets %}
+        <li class="list-group-item d-flex align-items-center justify-content-between mb-3">
+            Ingresso {{ ticket.id_ticket }} <a href="{% url 'ticket_export' ticket_id=ticket.id_ticket %}" class="btn btn_verde color_preto"><i class="bi bi-file-arrow-down color_azul"></i> Baixar</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="text-center mt-3 mb-3">
+        <a href="{% url 'home' %}" class="btn btn_rosa color_preto">Finalizar venda</a>
+    </div>
 </main>
 
 {% endblock %}

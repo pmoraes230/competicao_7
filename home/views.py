@@ -4,8 +4,13 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth import logout
 from django.db.models import Q
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from . import models
 import uuid
+import pdfkit
 
 # Create your views here.
 def get_user_profile(request):
@@ -120,7 +125,8 @@ def buy_ticket(request, id_event):
             client = models.Client.objects.get(id=client_id)
         except models.Client.DoesNotExist:
             messages.error(request, "Cliente não encontrado")
-            
+            return redirect("buy_ticket", id_event=id_event)
+        
         sector_id = request.POST.get("sector_event")
         amount_ticket = int(request.POST.get("ticket_event", 0))
         
@@ -132,9 +138,10 @@ def buy_ticket(request, id_event):
             sector_event = models.Sector.objects.get(id=sector_id)
         except models.Sector.DoesNotExist:
             messages.error(request, "Setor não existente no sistema")
-            
+            return redirect("buy_ticket", id_event=id_event)
+        
         if amount_ticket == 0:
-            messages.info(request, "A quantidade minima para venda de ingresso é uma unidade")
+            messages.info(request, "A quantidade mínima para venda de ingresso é uma unidade")
             return redirect("buy_ticket", id_event=id_event)
         elif amount_ticket > 10:
             messages.info(request, "A quantidade máxima de ingresso por cliente é 10 unidades")
@@ -151,11 +158,13 @@ def buy_ticket(request, id_event):
                     status='emitido'
                 )
                 tickets.append(ticket)
-                messages.success(request, "Ingresso gerado.")
-                
-                del request.session['client_id']
-                return redirect("buy_ticket", id_event=id_event)
-
+            
+            messages.success(request, f"{amount_ticket} ingresso(s) gerado(s).")
+            del request.session['client_id']
+            # Redireciona com a lista de ticket_ids como query string
+            ticket_ids = [ticket.id_ticket for ticket in tickets]
+            url = reverse("ticket_list") + "?" + "&".join([f"ticket_ids={ticket_id}" for ticket_id in ticket_ids])
+            return HttpResponseRedirect(url)
     
     context.update({
         'event': event,
@@ -163,4 +172,40 @@ def buy_ticket(request, id_event):
         'client': client,
         'sectors': sector
     })
-    return render(request, "event/deteils_event.html", context)
+    return render(request, "event/details_event.html", context)
+
+def ticket_list(request):
+    ticket_ids = request.GET.getlist("ticket_ids")
+    tickets = models.Ticket.objects.filter(id_ticket__in=ticket_ids)
+    context = {
+        'tickets': tickets,
+        **get_user_profile(request)
+    }
+    return render(request, "event/ticket_list.html", context)
+
+def export_ticket_pdf(request, ticket_id):
+    ticket = get_object_or_404(models.Ticket, id_ticket=ticket_id)
+    page_html = render_to_string('event/ticket.html', {'ticket': ticket})
+    
+    configuration = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
+    options = {
+        'page-width': '80mm',  # Largura personalizada
+        'page-height': '120mm',  # Altura personalizada
+        'orientation': 'Portrait',
+        'margin-top': '5mm',
+        'margin-right': '5mm',
+        'margin-bottom': '5mm',
+        'margin-left': '5mm',
+        'encoding': 'UTF-8',
+        'disable-external-links': None,
+        'disable-javascript': None,
+        'enable-local-file-access': None,  # <-- ESSA OPÇÃO LIBERA ACESSO
+    }
+    try:
+        pdf = pdfkit.from_string(page_html, False, options=options, configuration=configuration)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="ingresso_{ticket_id}.pdf"'
+        response.write(pdf)
+        return response
+    except Exception as e:
+        return HttpResponse(f"Erro ao gerar PDF: {str(e)}", status=500)
