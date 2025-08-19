@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.contrib.auth import logout
 from django.db.models import Q
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
-from django.template.loader import render_to_string
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from . import models
@@ -28,7 +28,6 @@ def get_user_profile(request):
             return {"user_name": "", "is_authenticated": False}
     return {"user_name": "", "is_authenticated": False}
 
-<<<<<<< HEAD
 def login(request):
     if request.method == "GET":
         return render(request, "login/login.html")
@@ -50,22 +49,16 @@ def login(request):
                 
                 if user.profile.name == "Totem":
                     return redirect("validador")
-                else:
-                    return redirect("home")
+                return redirect("home")
             else:
                 messages.error(request, "Senha incorreta")
                 return redirect("login")
-        else:
-            messages.error(request, "Usuário não encontrado")
-            return redirect("login")
-
+            
 def logout_view(request):
     logout(request)
     messages.success(request, "Você saiu do sistema")
     return redirect("login")
-    
-=======
->>>>>>> parent of 04ffaf0 (login)
+                
 def home(request):
     context = get_user_profile(request)
     context['events'] = models.Event.objects.all()
@@ -184,31 +177,27 @@ def ticket_list(request):
         'tickets': tickets,
         **get_user_profile(request)
     }
-    return render(request, "event/ticket_list.html", context)
-
-def export_ticket_pdf(request, ticket_id):
-    ticket = get_object_or_404(models.Ticket, id_ticket=ticket_id)
-    page_html = render_to_string('event/ticket.html', {'ticket': ticket})
+    return render(request, "event/list_ticket.html",context)
     
+def ticket_generate(request, id_ticket):
+    ticket_id = get_object_or_404(models.Ticket, id_ticket=id_ticket)
+    html = render_to_string('event/ticket_id.html', {'ticket': ticket_id})
     configuration = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
+    
     options = {
-        'page-width': '80mm',  # Largura personalizada
-        'page-height': '120mm',  # Altura personalizada
+        'page-width': '148mm',
+        'page-height': '210mm',
         'orientation': 'Portrait',
-        'margin-top': '5mm',
-        'margin-right': '5mm',
-        'margin-bottom': '5mm',
-        'margin-left': '5mm',
-        'encoding': 'UTF-8',
-        'disable-external-links': None,
-        'disable-javascript': None,
-        'enable-local-file-access': None,  # <-- ESSA OPÇÃO LIBERA ACESSO
+        'page-size': 'A5',
+        'encoding': "UTF-8",
     }
+
     try:
-        pdf = pdfkit.from_string(page_html, False, options=options, configuration=configuration)
+        pdf = pdfkit.from_string(html, False, configuration=configuration, options=options)
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="ingresso_{ticket_id}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="ingresso_{id_ticket}.pdf"'
         response.write(pdf)
+
         return response
     except Exception as e:
         return HttpResponse(f"Erro ao gerar PDF: {str(e)}", status=500)
