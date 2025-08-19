@@ -28,6 +28,7 @@ def get_user_profile(request):
             return {"user_name": "", "is_authenticated": False}
     return {"user_name": "", "is_authenticated": False}
 
+<<<<<<< HEAD
 def login(request):
     if request.method == "GET":
         return render(request, "login/login.html")
@@ -63,6 +64,8 @@ def logout_view(request):
     messages.success(request, "Você saiu do sistema")
     return redirect("login")
     
+=======
+>>>>>>> parent of 04ffaf0 (login)
 def home(request):
     context = get_user_profile(request)
     context['events'] = models.Event.objects.all()
