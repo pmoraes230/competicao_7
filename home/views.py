@@ -170,6 +170,11 @@ def buy_ticket(request, id_event):
     })
     return render(request, "event/details_event.html", context)
 
+def list_tickets(request, id_events):
+    context = get_user_profile(request)
+    context['tickets'] = models.Ticket.objects.filter(event=id_events).order_by("date_issue")
+    return render(request, "event/list_tickets.html", context)
+
 def ticket_list(request):
     ticket_ids = request.GET.getlist("ticket_ids")
     tickets = models.Ticket.objects.filter(id_ticket__in=ticket_ids)

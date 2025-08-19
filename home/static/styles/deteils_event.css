@@ -26,3 +26,7 @@
 .line_description {
     border-bottom: 5px solid var(--laranja);
 }
+
+.radius {
+    border-radius: 10px;
+}

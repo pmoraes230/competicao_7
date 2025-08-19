@@ -1,3 +1,43 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from home.views import get_user_profile
+from home import models
 
 # Create your views here.
+def validador(request):
+    context = get_user_profile(request)
+    if request.method == "POST":
+        input_ticket = request.POST.get("id_ticket")
+        if not input_ticket:
+            messages.info(request, "Insira o código do ingresso antes de validar")
+            return redirect("validador")
+        
+        try:
+            ticket = models.Ticket.objects.get(id_ticket=input_ticket)
+            if ticket.status == "validado":
+                messages.info(request, "Ingresso já validado antes, valide um outro.")
+                return redirect("validador")
+            if ticket.status == "cancelado":
+                messages.info(request, "Ingresso cancelado para este evento. Valide um outro.")
+                return redirect("validador")
+            if ticket.status == "emitido":
+                ticket.status = "validado"
+                ticket.save()
+                messages.success(request, "Ingresso validado com sucesso. Bom show!")
+                return redirect("validador")
+        except models.Ticket.DoesNotExist:
+            messages.error(request, "Ingresso não encontrado")
+            return redirect("validador")
+    return render(request, "validador.html", context)
+
+def ticket_cancel(request, id_ticket):
+    try:
+        ticket = models.Ticket.objects.get(id_ticket=id_ticket)
+        if request.method == "POST":
+            ticket.status = "cancelado"
+            ticket.save()
+            messages.success(request, "Reserva do ingresso cancelado")
+        return redirect("list_tickets", id_events=ticket.event.id) 
+    except models.Ticket.DoesNotExist:
+        messages.error(request, "Ingresso não encontrado")
+        return redirect("list_tickets", id_events=ticket.event.id)

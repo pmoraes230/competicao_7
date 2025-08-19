@@ -122,6 +122,10 @@ main {
     box-shadow: 0 4px 4px 0 var(--laranja);
 }
 
+.g-10 {
+    gap: 10px;
+}
+
 .info {
     color: var(--laranja);
 }
