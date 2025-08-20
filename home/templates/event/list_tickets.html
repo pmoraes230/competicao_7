@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% block header %}
+{% include 'partials/header/header.html' %}
+{% endblock %}
+
+<main class="container">
+    {% if messages %}
+    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 color_azul" id="messageModalLabel">Aviso</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group">
+                        {% for message in messages %}
+                        <li class="{{ message.tags }} list-group-item">{{ message }}</li>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn_laranja color_preto" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <h1 class="text-center color_azul mt-4">Ingressos gerados</h1>
+
+    <!-- Filtro de status -->
+    <form method="get" class="d-flex justify-content-center mb-4">
+        <select name="status" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            <option value="EMITIDO" {% if request.GET.status == "EMITIDO" %}selected{% endif %}>Emitido</option>
+            <option value="VALIDADO" {% if request.GET.status == "VALIDADO" %}selected{% endif %}>Validado</option>
+            <option value="CANCELADO" {% if request.GET.status == "CANCELADO" %}selected{% endif %}>Cancelados</option>
+        </select>
+    </form>
+
+    <div class="row">
+        {% for ticket in tickets %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title color_rosa">
+                        Cliente: <span class="color_preto">{{ ticket.client.name }}</span>
+                    </h5>
+                    <p class="card-text color_rosa">
+                        Evento: <span class="color_preto">{{ ticket.event.event_name }}</span>
+                    </p>
+                    <p class="card-text color_rosa">
+                        Setor: <span class="color_preto">{{ ticket.sector.name }}</span>
+                    </p>
+                    <p class="card-text color_rosa">
+                        Emitido em: <span class="color_preto">{{ ticket.date_issue|date:"d/m/Y H:i" }}</span>
+                    </p>
+                    <p class="card-text color_rosa">
+                        Status:
+                        {% if ticket.status == "validado" %}
+                            <span class="badge bg-success">Validado</span> 
+                        {% elif ticket.status == "validado" %}
+                            <span class="badge bg-success">Validado</span>
+                        {% elif ticket.status == "CANCELADO" %}
+                            <span class="badge bg-danger">Cancelado</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ ticket.status }}</span>
+                        {% endif %}
+                    </p>
+                    <p class="card-text color_rosa">
+                        Código: <span class="color_preto">{{ ticket.id_ticket }}</span>
+                    </p>
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <a href="{% url 'ticket_generete' ticket.id_ticket %}" class="btn btn_verde btn-sm color_preto">Gerar PDF</a>
+                    <form action="{% url 'ticket_cancel' ticket.id_ticket %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn_rosa btn-sm color_preto">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p class="text-muted">Nenhum ingresso encontrado.</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+{% endblock %}
+{% block footer %}
+{% include "partials/footer/footer.html" %}
+{% endblock %}
