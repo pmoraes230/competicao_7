@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: "Roboto Condensed", sans-serif;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .imagem {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            z-index: -999;
+            height: 210mm;
+        }
+        
+        .container_ticket {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            padding: 80px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .color_azul {
+            color: #1331A1;
+        }
+        .color_rosa {
+            color: #F31366;
+        }
+        .color_preto {
+            color: #010101;
+        }
+        .absolute_top {
+            position: absolute;
+            top: 82px;
+        }
+        .size-48 {
+            font-size: 64px;
+        }
+        .size-20 {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="imagem">
+        <img src="http://127.0.0.1:8000/static/images/A5.png" alt="imagem" class="img">
+    </div>
+    <div class="container_ticket">
+        <h1 class="text-center color_azul size-48">Ingresso</h1>
+        <div class="inf_ticket">
+            <p class="color_rosa size-20">Nome do cliente: <span class="color_preto">{{ ticket.client.name }}</span></p>
+            <p class="color_rosa size-20">Evento: <span class="color_preto">{{ ticket.event.event_name }}</span></p>
+            <p class="color_rosa size-20">Setor comprado: <span class="color_preto">{{ ticket.sector.name }}</span></p>
+            <p class="color_rosa size-20">Data de emissão: <span class="color_preto">{{ ticket.date_issue|date:"d/m/Y H:i" }}</span></p>
+            <p class="color_rosa size-20">ID do ingresso: <span class="color_preto">{{ ticket.id_ticket }}</span></p>
+        </div>
+    </div>
+</body>
+</html>
