@@ -31,26 +31,62 @@
     {% endif %}
 
     <h1 class="text-center color_azul mt-4">Ingressos gerados</h1>
+
+    <!-- Filtro de status -->
+    <form method="get" class="d-flex justify-content-center mb-4">
+        <select name="status" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            <option value="EMITIDO" {% if request.GET.status == "EMITIDO" %}selected{% endif %}>Emitido</option>
+            <option value="VALIDADO" {% if request.GET.status == "VALIDADO" %}selected{% endif %}>Validado</option>
+            <option value="CANCELADO" {% if request.GET.status == "CANCELADO" %}selected{% endif %}>Cancelados</option>
+        </select>
+    </form>
+
     <div class="row">
         {% for ticket in tickets %}
-        <div class="col-sm-4 mb-3 mb-sm-0">
-            <div class="card mb-3">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title color_rosa">Nome do cliente: <span class="color_preto">{{ ticket.client.name }}</span></h5>
-                    <p class="card-text color_rosa">Evento: <span class="color_preto">{{ ticket.event.event_name }}</span></p>
-                    <p class="card-text color_rosa">Setor comprado: <span class="color_preto">{{ ticket.sector.name }}</span></p>
-                    <p class="card-text color_rosa">Setor comprado: <span class="color_preto">{{ticket.date_issue|date:"d/m/Y H:i" }}</span></p>
-                    <p class="card-text color_rosa">Status do setor: <span class="color_preto">{{ ticket.status }}</span></p>
-                    <p class="card-text color_rosa">Status do setor: <span class="color_preto">{{ ticket.id_ticket }}</span></p>
-                    <div class="d-flex g-10">
-                        <a href="{% url 'ticket_generete' ticket.id_ticket %}" class="btn btn_verde color_preto">Gerar PDF</a>
-                        <form action="{% url 'ticket_cancel' ticket.id_ticket %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn_rosa color_preto">Cancelar cadastro</button>
-                        </form>
-                    </div>
+                    <h5 class="card-title color_rosa">
+                        Cliente: <span class="color_preto">{{ ticket.client.name }}</span>
+                    </h5>
+                    <p class="card-text color_rosa">
+                        Evento: <span class="color_preto">{{ ticket.event.event_name }}</span>
+                    </p>
+                    <p class="card-text color_rosa">
+                        Setor: <span class="color_preto">{{ ticket.sector.name }}</span>
+                    </p>
+                    <p class="card-text color_rosa">
+                        Emitido em: <span class="color_preto">{{ ticket.date_issue|date:"d/m/Y H:i" }}</span>
+                    </p>
+                    <p class="card-text color_rosa">
+                        Status:
+                        {% if ticket.status == "validado" %}
+                            <span class="badge bg-success">Validado</span> 
+                        {% elif ticket.status == "validado" %}
+                            <span class="badge bg-success">Validado</span>
+                        {% elif ticket.status == "CANCELADO" %}
+                            <span class="badge bg-danger">Cancelado</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ ticket.status }}</span>
+                        {% endif %}
+                    </p>
+                    <p class="card-text color_rosa">
+                        Código: <span class="color_preto">{{ ticket.id_ticket }}</span>
+                    </p>
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <a href="{% url 'ticket_generete' ticket.id_ticket %}" class="btn btn_verde btn-sm color_preto">Gerar PDF</a>
+                    <form action="{% url 'ticket_cancel' ticket.id_ticket %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn_rosa btn-sm color_preto">Cancelar</button>
+                    </form>
                 </div>
             </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p class="text-muted">Nenhum ingresso encontrado.</p>
         </div>
         {% endfor %}
     </div>

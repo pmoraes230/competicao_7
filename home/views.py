@@ -53,6 +53,9 @@ def login(request):
             else:
                 messages.error(request, "Senha incorreta")
                 return redirect("login")
+        else:
+            messages.error(request, "Usuário não encontrado")
+            return redirect("login")
             
 def logout_view(request):
     logout(request)
@@ -172,7 +175,14 @@ def buy_ticket(request, id_event):
 
 def list_tickets(request, id_events):
     context = get_user_profile(request)
-    context['tickets'] = models.Ticket.objects.filter(event=id_events).order_by("date_issue")
+
+    tickets = models.Ticket.objects.filter(event=id_events)
+
+    status = request.GET.get("status")
+    if status:  # só filtra se o usuário enviou o status
+        tickets = tickets.filter(status=status)
+
+    context["tickets"] = tickets.order_by("-date_issue")
     return render(request, "event/list_tickets.html", context)
 
 def ticket_list(request):

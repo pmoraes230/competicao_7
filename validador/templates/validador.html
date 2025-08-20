@@ -3,7 +3,11 @@
 
 {% block content %}
 {% block header %}
+{% if user_role == "Totem" %}
+{% include 'partials/header/header_validador.html' %}
+{% else %}
 {% include 'partials/header/header.html' %}
+{% endif %}
 {% endblock %}
 
 <main class="container">

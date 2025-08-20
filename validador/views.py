@@ -7,7 +7,7 @@ from home import models
 def validador(request):
     context = get_user_profile(request)
     if request.method == "POST":
-        input_ticket = request.POST.get("id_ticket")
+        input_ticket = request.POST.get("id_ticket").strip()
         if not input_ticket:
             messages.info(request, "Insira o código do ingresso antes de validar")
             return redirect("validador")
